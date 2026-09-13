@@ -29,7 +29,7 @@ Decisions (2026-09-13):
 ## Layout
 
 `index.html` + `css/style.css` + `js/app.js` (tabs: Standings · Fixtures & Results
-· Players · Teams), `js/parse.js` (workbook → JSON, UMD so Node and browser share
+· Rankings · Brackets · Teams), `js/parse.js` (workbook → JSON, UMD so Node and browser share
 it), `tools/publish.js`, `tools/serve.js`, generated `data/league.js`. Workbook
 layout rules are documented in README → "Workbook layout".
 
@@ -37,13 +37,17 @@ layout rules are documented in README → "Workbook layout".
 
 - 2026-09-13: built and verified locally against the Fall 2026 workbook (week 1
   results in; 42 fixtures, 8 teams, 23 subs, 58 ranked players).
-- GitHub repo `h00nster15/seoul-club-squash-league` + Pages: see "Accounts" —
-  create if not yet done (`gh repo create … --public --source . --push`, then
-  enable Pages from branch `main` / root).
+- 2026-09-13: public repo https://github.com/h00nster15/seoul-club-squash-league,
+  GitHub Pages from `main` / root → https://h00nster15.github.io/seoul-club-squash-league/
+  (gh CLI installed and logged in as h00nster15 on this machine).
+- 2026-09-13: **Rankings** tab (individual Elo-style rating across brackets, seeded
+  by string, K 32/40/48 by margin, provisional < 3 rubbers) — see README. The
+  organiser's per-bracket table is the **Brackets** tab.
 
 ## Ideas not started
 
-- Player pages (click a name → all rubbers this season).
+- Player pages (click a name → all rubbers this season, rating history chart).
+- Rankings: tune seeds/K after a few weeks; maybe show the seed-vs-now table.
 - Head-to-head / form guide, "next match" for a player.
 - Korean UI strings (league is English-speaking; not needed now).
 - A team-captain result form (would need a backend/Apps Script → then Excel is no

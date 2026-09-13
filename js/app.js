@@ -58,7 +58,106 @@
       return anyPending.length ? anyPending[0].week : null;
     })();
 
-    return { keyOf, teamOf, rec, matchIndex, player, upcomingWeek };
+    const x = { keyOf, teamOf, rec, matchIndex, player, upcomingWeek };
+    x.rankings = computeRankings(d, x);
+    return x;
+  }
+
+  // ---------- individual rankings (Elo-style, seeded by bracket) ----------
+  // Every rubber moves both players' ratings: K = 32 for a 3–2, 40 for a 3–1,
+  // 48 for a 3–0. Seeds: bracket 1 = 1600 … bracket 5 = 1200 (a sub is seeded
+  // by the bracket they cover). Processed week by week, in fixture order.
+  const SEED = { 1: 1600, 2: 1500, 3: 1400, 4: 1300, 5: 1200 };
+  const PROVISIONAL = 3; // matches before a rating counts as settled
+  function computeRankings(d, x) {
+    const bracketOf = new Map();
+    d.teams.forEach((t) => t.players.forEach((p, i) => bracketOf.set(x.keyOf(p), Math.min(i + 1, 5))));
+    d.substitutes.forEach((s) => { const k = x.keyOf(s.name); if (!bracketOf.has(k)) bracketOf.set(k, s.rank || 3); });
+    d.performance.forEach((p) => { const k = x.keyOf(p.player); if (!bracketOf.has(k)) bracketOf.set(k, p.bracket || 3); });
+
+    const R = new Map();
+    const get = (name) => {
+      const k = x.keyOf(name);
+      if (!R.has(k)) {
+        const b = bracketOf.get(k) || 3;
+        R.set(k, { key: k, name, bracket: b, seed: SEED[b], rating: SEED[b], played: 0, w: 0, l: 0, gf: 0, ga: 0, form: [], history: [] });
+      }
+      return R.get(k);
+    };
+    // Everyone on a roster or the sub list gets an entry even before playing
+    d.teams.forEach((t) => t.players.forEach(get));
+    d.substitutes.forEach((s) => get(s.name));
+
+    const weeks = [...d.weeks].sort((a, b) => a.week - b.week);
+    let lastPlayedWeek = null;
+    for (const w of weeks) {
+      const ordered = [];
+      const seen = new Set();
+      d.fixtures.filter((f) => f.week === w.week).sort((a, b) => a.date.localeCompare(b.date) || a.court - b.court).forEach((f) => {
+        const m = f.matchNumber != null ? x.matchIndex.get(`${w.week}:${f.matchNumber}`) : null;
+        if (m && !seen.has(m)) { seen.add(m); ordered.push(m); }
+      });
+      w.matches.forEach((m) => { if (!seen.has(m)) ordered.push(m); });
+      let any = false;
+      for (const m of ordered) {
+        if (!m.played) continue;
+        for (const r of m.rubbers) {
+          if (!r.homePlayer || !r.awayPlayer || r.homeGames + r.awayGames === 0) continue;
+          any = true;
+          const a = get(r.homePlayer), b = get(r.awayPlayer);
+          const ea = 1 / (1 + Math.pow(10, (b.rating - a.rating) / 400));
+          const aWon = r.homeGames > r.awayGames;
+          const gd = Math.abs(r.homeGames - r.awayGames);
+          const K = 32 * (1 + 0.25 * (gd - 1));
+          const delta = K * ((aWon ? 1 : 0) - ea);
+          a.rating += delta; b.rating -= delta;
+          a.played++; b.played++;
+          if (aWon) { a.w++; b.l++; } else { b.w++; a.l++; }
+          a.gf += r.homeGames; a.ga += r.awayGames; b.gf += r.awayGames; b.ga += r.homeGames;
+          a.form.push({ week: w.week, won: aWon, vs: b.name, score: `${r.homeGames}–${r.awayGames}` });
+          b.form.push({ week: w.week, won: !aWon, vs: a.name, score: `${r.awayGames}–${r.homeGames}` });
+        }
+      }
+      if (any) { lastPlayedWeek = w.week; R.forEach((p) => p.history.push({ week: w.week, rating: p.rating })); }
+    }
+
+    const list = [...R.values()];
+    for (const p of list) {
+      const prev = p.history.length >= 2 ? p.history[p.history.length - 2].rating : p.seed;
+      p.delta = p.rating - prev;             // movement since the previous week with results
+      p.provisional = p.played < PROVISIONAL;
+      p.team = x.teamOf.get(p.key) || 'Sub';
+    }
+    const ranked = list.filter((p) => p.played > 0).sort((a, b) => b.rating - a.rating || b.w - a.w || (b.gf - b.ga) - (a.gf - a.ga) || a.name.localeCompare(b.name));
+    ranked.forEach((p, i) => { p.rank = i + 1; });
+    const unranked = list.filter((p) => p.played === 0).sort((a, b) => a.bracket - b.bracket || a.name.localeCompare(b.name));
+    return { ranked, unranked, lastPlayedWeek };
+  }
+
+  function renderRankings(d, x) {
+    const { ranked, unranked, lastPlayedWeek } = x.rankings;
+    const rows = ranked.map((p) => {
+      const mv = Math.round(p.delta);
+      const form = p.form.slice(-6).map((f) => `<i class="dot ${f.won ? 'w' : 'l'}" title="Wk ${f.week}: ${f.won ? 'beat' : 'lost to'} ${esc(f.vs)} ${f.score}"></i>`).join('');
+      return `<tr>
+        <td class="n muted">${p.rank}</td>
+        <td class="team">${esc(p.name)}${p.provisional ? '<span class="sub" title="Fewer than 3 matches — rating still settling">prov.</span>' : ''}</td>
+        <td class="muted">${esc(p.team)}</td><td class="n muted">${p.bracket}</td>
+        <td class="n pts">${Math.round(p.rating)}</td>
+        <td class="n ${mv > 0 ? 'w' : mv < 0 ? 'l' : 'muted'}">${mv > 0 ? '▲' : mv < 0 ? '▼' : '·'} ${Math.abs(mv) || ''}</td>
+        <td class="n">${p.played}</td><td class="n">${p.w}–${p.l}</td><td class="n">${p.gf}–${p.ga}</td>
+        <td class="form">${form}</td></tr>`;
+    }).join('');
+    const pending = unranked.map((p) => `<span class="chip">${esc(p.name)} <span class="muted">${esc(p.team)} · B${p.bracket}</span></span>`).join('');
+    $('#tab-rankings').innerHTML = `
+      <div class="card">
+        <h2>Individual rankings <span class="sub">${ranked.length} players rated${lastPlayedWeek ? ' · after week ' + lastPlayedWeek : ''}</span></h2>
+        ${ranked.length ? `<div class="tablewrap"><table>
+          <thead><tr><th class="n">#</th><th>Player</th><th>Team</th><th class="n" title="Bracket / string">Br</th><th class="n">Rating</th><th class="n" title="Change since the previous week">Δ</th><th class="n" title="Rubbers played">P</th><th class="n">W–L</th><th class="n">Games</th><th>Form</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>` : '<div class="muted">No rubbers played yet.</div>'}
+        <div class="note">Elo-style rating across all brackets. Everyone starts from a seed by string (1: 1600 · 2: 1500 · 3: 1400 · 4: 1300 · 5: 1200); each rubber moves both players by up to 32 points (×1.25 for 3–1, ×1.5 for 3–0), more when the underdog wins. Δ is the change since the previous week's results; <b>prov.</b> = fewer than ${PROVISIONAL} rubbers played.</div>
+      </div>
+      ${unranked.length ? `<div class="card"><h2>Not yet rated <span class="sub">${unranked.length} players without a rubber this season</span></h2><div class="chips">${pending}</div></div>` : ''}`;
   }
 
   // ---------- standings ----------
@@ -240,6 +339,7 @@
     $('#foot').textContent = `${data.league} · ${data.season}${data.source ? ' · from ' + data.source : ''}`;
     renderStandings(data, x);
     renderFixtures(data, x);
+    renderRankings(data, x);
     renderPlayers(data, x);
     renderTeams(data, x);
   }
@@ -255,7 +355,7 @@
     document.querySelectorAll('section[role=tabpanel]').forEach((s) => { s.hidden = s.id !== 'tab-' + name; });
     if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
   }
-  if (/^#(standings|fixtures|players|teams)$/.test(location.hash)) selectTab(location.hash.slice(1));
+  if (/^#(standings|fixtures|rankings|players|teams)$/.test(location.hash)) selectTab(location.hash.slice(1));
 
   // ---------- preview a workbook (drag & drop or file picker) ----------
   const SHEETJS = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';

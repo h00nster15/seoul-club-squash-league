@@ -23,11 +23,22 @@ reads the **Player Contact Info** tab, so no contact details reach the site.
 To check a workbook without publishing, open the site and drop the `.xlsx` on the
 page (or use "Preview a workbook" in the footer) — it is parsed in the browser.
 
+## Individual rankings
+
+The **Rankings** tab is computed in the browser from the rubbers in the week
+sheets (nothing to maintain in the workbook): an Elo-style rating across all
+brackets. Seeds by string — 1: 1600, 2: 1500, 3: 1400, 4: 1300, 5: 1200 (a sub is
+seeded by the bracket they cover). Each rubber moves both players by
+K × (result − expected), with K = 32 for 3–2, 40 for 3–1, 48 for 3–0. Ratings are
+processed week by week in fixture order; Δ shows the change since the previous
+week with results; fewer than 3 rubbers = provisional. Constants live at the top
+of  in .
+
 ## Files
 
 | Path | What |
 |---|---|
-| `index.html`, `css/style.css`, `js/app.js` | The site (Standings · Fixtures & Results · Players · Teams) |
+| `index.html`, `css/style.css`, `js/app.js` | The site (Standings · Fixtures & Results · Rankings · Brackets · Teams) |
 | `js/parse.js` | Workbook → JSON parser, shared by Node and the browser |
 | `tools/publish.js` | Reads the .xlsx, writes `data/league.js`, optionally commits + pushes |
 | `tools/serve.js` | Local preview server |
