@@ -32,7 +32,7 @@ seeded by the bracket they cover). Each rubber moves both players by
 K × (result − expected), with K = 32 for 3–2, 40 for 3–1, 48 for 3–0. Ratings are
 processed week by week in fixture order; Δ shows the change since the previous
 week with results; fewer than 3 rubbers = provisional. Constants live at the top
-of  in .
+of `computeRankings` in `js/app.js`.
 
 ## Files
 
