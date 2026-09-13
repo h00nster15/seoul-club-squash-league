@@ -1,0 +1,137 @@
+/* Seoul Club Squash League — public site */
+:root {
+  --bg: #f6f5f1;
+  --card: #ffffff;
+  --ink: #17191c;
+  --muted: #6b7078;
+  --line: #e3e1da;
+  --accent: #1f4e3d;       /* court green */
+  --accent-ink: #ffffff;
+  --accent-soft: #e6efe9;
+  --win: #1f4e3d;
+  --loss: #a33a2c;
+  --zone: #fbf6e6;         /* play-off zone rows */
+  --radius: 12px;
+  --font: 'Inter', -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131416; --card: #1c1e21; --ink: #ebe9e3; --muted: #9a9fa8; --line: #2c2f34;
+    --accent: #7fc4a3; --accent-ink: #0f1a15; --accent-soft: #1f2a25; --win: #7fc4a3; --loss: #e08a7c; --zone: #24221a;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font);
+  font-size: 15px; line-height: 1.45; font-feature-settings: 'tnum' 1, 'cv11' 1;
+}
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+.wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* header */
+.top { padding: 28px 0 14px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.top h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; font-weight: 700; }
+.top h1 small { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; letter-spacing: 0; }
+.top .meta { color: var(--muted); font-size: 12.5px; text-align: right; }
+.top .meta b { color: var(--ink); font-weight: 600; }
+
+/* tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button {
+  background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 12px; margin-bottom: -1px;
+  color: var(--muted); font-weight: 600; font-size: 14px; white-space: nowrap; cursor: pointer;
+}
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs button:hover { color: var(--ink); }
+section[hidden] { display: none; }
+
+/* cards + tables */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
+.card h2 { margin: 0 0 10px; font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.card h2 .sub { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+.tablewrap { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 8px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; }
+td.pts { font-weight: 700; }
+tr.zone td { background: var(--zone); }
+tr.zone td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.team { font-weight: 600; }
+.muted { color: var(--muted); }
+.legend { color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+.legend i { display: inline-block; width: 10px; height: 10px; background: var(--zone); border-left: 3px solid var(--accent); vertical-align: -1px; margin-right: 5px; }
+
+/* two-column on wide screens */
+.cols { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 760px) { .cols { grid-template-columns: 3fr 2fr; } .cols > .card { margin-bottom: 0; } .cols { margin-bottom: 16px; } }
+
+/* fixtures */
+.week { margin-bottom: 18px; }
+.week h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; display: flex; gap: 10px; align-items: baseline; }
+.week h3 .cur { color: var(--accent); }
+.fixture { display: block; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 0; margin-bottom: 8px; overflow: hidden; }
+.fixture .row { display: grid; grid-template-columns: 78px 1fr auto 1fr 20px; align-items: center; gap: 8px; padding: 11px 14px; cursor: pointer; border: 0; background: none; width: 100%; text-align: left; }
+.fixture .row:hover { background: var(--accent-soft); }
+.fixture .when { font-size: 12.5px; color: var(--muted); line-height: 1.25; }
+.fixture .when b { display: block; color: var(--ink); font-weight: 600; }
+.fixture .home { text-align: right; font-weight: 600; }
+.fixture .away { text-align: left; font-weight: 600; }
+.fixture .score { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 16px; min-width: 64px; text-align: center; letter-spacing: 0.02em; }
+.fixture .score small { display: block; font-size: 11px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.fixture .score.tbd { color: var(--muted); font-weight: 500; font-size: 13px; }
+.fixture .chev { color: var(--muted); font-size: 15px; transition: transform .15s; text-align: right; }
+.fixture[open] .chev { transform: rotate(180deg); }
+.fixture .w { color: var(--win); }
+.fixture .l { color: var(--loss); }
+.fixture .detail { border-top: 1px solid var(--line); padding: 6px 14px 10px; display: none; }
+.fixture[open] .detail { display: block; }
+.rubber { display: grid; grid-template-columns: 22px 1fr auto 1fr; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 14px; align-items: center; }
+.rubber:last-child { border-bottom: 0; }
+.rubber .rk { color: var(--muted); font-size: 12px; }
+.rubber .hp { text-align: right; }
+.rubber .sc { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 44px; text-align: center; }
+.rubber .sc.tbd { color: var(--muted); font-weight: 500; }
+.sub { font-size: 10.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin: 0 4px; vertical-align: 1px; }
+.note { font-size: 12.5px; color: var(--muted); padding: 4px 0 0; }
+.tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tools button, .tools select { border: 1px solid var(--line); background: var(--card); border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.tools button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* teams */
+.teamgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.teamcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.teamcard h3 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between; align-items: baseline; }
+.teamcard h3 span { font-size: 12px; color: var(--muted); font-weight: 500; }
+.teamcard ol { margin: 0; padding-left: 20px; }
+.teamcard li { padding: 3px 0; display: flex; justify-content: space-between; gap: 8px; }
+.teamcard li .rec { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.teamcard .empty { color: var(--muted); font-style: italic; }
+.subs { columns: 2; column-gap: 24px; }
+@media (min-width: 600px) { .subs { columns: 3; } }
+.subs div { break-inside: avoid; padding: 3px 0; display: flex; justify-content: space-between; }
+.subs .rk { color: var(--muted); font-size: 12px; }
+
+/* footer + preview */
+footer { color: var(--muted); font-size: 12.5px; margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+footer label { cursor: pointer; text-decoration: underline; }
+footer input { display: none; }
+.banner { background: var(--accent-soft); border: 1px solid var(--accent); color: var(--ink); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; font-size: 13.5px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.banner[hidden] { display: none; }
+.banner button { border: 0; background: var(--accent); color: var(--accent-ink); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+body.dragging::after { content: 'Drop the league workbook (.xlsx) to preview it'; position: fixed; inset: 0; display: grid; place-items: center; background: rgba(31,78,61,.85); color: #fff; font-size: 20px; font-weight: 600; z-index: 9; }
+
+@media (max-width: 480px) {
+  .fixture .row { grid-template-columns: 62px 1fr auto 1fr 14px; gap: 6px; padding: 10px 10px; font-size: 14px; }
+  .fixture .score { min-width: 54px; font-size: 15px; }
+  .rubber { font-size: 13px; }
+  .top h1 { font-size: 19px; }
+}

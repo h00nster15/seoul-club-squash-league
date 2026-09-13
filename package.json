@@ -1,0 +1,12 @@
+{
+  "name": "seoul-club-squash-league",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Seoul Club Squash League - public standings site published from the league Excel workbook",
+  "scripts": {
+    "publish": "node tools/publish.js"
+  },
+  "dependencies": {
+    "xlsx": "0.18.5"
+  }
+}

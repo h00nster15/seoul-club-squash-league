@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seoul Club Squash League</title>
+  <meta name="description" content="Standings, fixtures, results and player rankings for the Seoul Club Squash League.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231f4e3d'/><text x='16' y='22' font-size='17' font-family='sans-serif' font-weight='700' text-anchor='middle' fill='white'>SC</text></svg>">
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>Seoul Club Squash League <small id="season"></small></h1>
+      <div class="meta" id="meta"></div>
+    </header>
+
+    <div id="preview-banner" class="banner" hidden>
+      <span>Previewing <b id="preview-name"></b> — not published. Run <code>node tools/publish.js</code> to publish it.</span>
+      <button id="preview-clear" type="button">Back to published data</button>
+    </div>
+
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="standings" aria-selected="true">Standings</button>
+      <button role="tab" data-tab="fixtures">Fixtures &amp; Results</button>
+      <button role="tab" data-tab="players">Players</button>
+      <button role="tab" data-tab="teams">Teams</button>
+    </nav>
+
+    <section id="tab-standings" role="tabpanel"></section>
+    <section id="tab-fixtures" role="tabpanel" hidden></section>
+    <section id="tab-players" role="tabpanel" hidden></section>
+    <section id="tab-teams" role="tabpanel" hidden></section>
+
+    <footer>
+      <span id="foot"></span>
+      <label>Preview a workbook<input type="file" id="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+    </footer>
+  </div>
+
+  <script src="data/league.js"></script>
+  <script src="js/parse.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
