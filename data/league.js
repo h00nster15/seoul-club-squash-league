@@ -2,7 +2,7 @@
 window.LEAGUE_DATA = {
  "league": "Seoul Club Squash League",
  "season": "Fall 2026",
- "generatedAt": "2026-09-13T13:58:06.639Z",
+ "generatedAt": "2026-09-13T14:21:00.148Z",
  "source": "2026 Fall League.xlsx",
  "scoring": "1 point per game + 1 point per rubber + 4 points for the winning team (max. 20 team points)",
  "standings": [
